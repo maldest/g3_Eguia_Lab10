@@ -28,8 +28,22 @@ public class BNode<E> {
         return count == 0;
     }
 
-    public boolean searchNode(){
+    public boolean searchNode(E key) {
+        for (int i = 0; i < count; i++) {
+            if (keys.get(i).equals(key)) { // Si la clave se encuentra en el nodo
+                return true;  // La clave fue encontrada
+            }
+        }
         
+        return false;//si no encuentra nada devuelve false
     }
 
+    public String toString(){
+       StringBuilder sb = new StringBuilder("Node ID: " + idNode + " Keys: ");
+        for (int i = 0; i < count; i++) {
+            sb.append(keys.get(i)).append(" ");
+        }
+        return sb.toString();
+
+    }
 }
