@@ -1,6 +1,5 @@
 package lab10;
 
-import java.util.Arrays;
 
 /**
  * Actividad 1.3 - Eliminación de claves en un B-Tree de orden 3
