@@ -1,49 +1,183 @@
 package lab10;
 import java.util.ArrayList;
 
-public class BNode<E> {
-    protected ArrayList<E> keys;           // claves del nodo
-    protected ArrayList<BNode<E>> childs;    // hijos del nodo
-    protected int count;                   // cantidad de claves en el nodo
-    protected static int idCounter = 0;      // contador para idNode
-    protected int idNode;                  // identificador único del nodo
+/**
+ * Clase que representa un nodo de un B-Tree
+ * @param <E> Tipo de elementos almacenados en el nodo, debe ser Comparable
+ */
+public class BNode<E extends Comparable<E>> {
+    protected ArrayList<E> keys;          // Lista de claves almacenadas en el nodo
+    protected ArrayList<BNode<E>> childs; // Lista de referencias a hijos
+    protected int count;                  // Número actual de claves en el nodo
 
-    // Constructor del nodo, inicializa las claves y los hijos
+    /**
+     * Constructor que crea un nodo con capacidad para n claves
+     * @param n Orden del nodo (máximo número de claves)
+     * @throws NegativeValueException Si n es menor o igual a 0
+     */
     public BNode(int n) {
+        if (n <= 0) {
+            throw new Exceptions.NegativeValueException("El orden del nodo debe ser positivo");
+        }
+        
         this.keys = new ArrayList<E>(n);
-        this.childs = new ArrayList<BNode<E>>(n);
+        this.childs = new ArrayList<BNode<E>>(n + 1); // n claves → n+1 hijos
         this.count = 0;
-        this.idNode = idCounter++; 
+        
+        // Inicializar las listas con valores nulos
         for (int i = 0; i < n; i++) {
             this.keys.add(null);
+        }
+        for (int i = 0; i < n + 1; i++) {
             this.childs.add(null);
         }
     }
 
-    public boolean nodeFull(){
+    /**
+     * Verifica si el nodo es una hoja
+     * @return true si no tiene hijos, false en caso contrario
+     */
+    public boolean isLeaf() {
+        return childs.get(0) == null;
+    }
+
+    /**
+     * Inserta una clave en la posición especificada manteniendo el orden
+     * @param key Clave a insertar
+     * @param index Posición donde insertar
+     * @throws NullValueException Si la clave es nula
+     */
+    public void insertKey(E key, int index) {
+        if (key == null) {
+            throw new Exceptions.NullValueException("No se puede insertar una clave nula");
+        }
+        
+        // Desplazar las claves para hacer espacio
+        for (int i = count; i > index; i--) {
+            keys.set(i, keys.get(i - 1));
+        }
+        keys.set(index, key);
+        count++;
+    }
+
+    /**
+     * Elimina una clave del nodo
+     * @param index Posición de la clave a eliminar
+     * @return Clave eliminada
+     */
+    public E removeKey(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Índice inválido");
+        }
+        
+        E removedKey = keys.get(index);
+        
+        // Desplazar las claves para llenar el espacio
+        for (int i = index; i < count - 1; i++) {
+            keys.set(i, keys.get(i + 1));
+        }
+        keys.set(count - 1, null); // Limpiar la última posición
+        count--;
+        
+        return removedKey;
+    }
+
+    /**
+     * Inserta un hijo en la posición especificada
+     * @param child Nodo hijo a insertar
+     * @param index Posición donde insertar
+     */
+    public void insertChild(BNode<E> child, int index) {
+        // Desplazar los hijos para hacer espacio
+        for (int i = count + 1; i > index; i--) {
+            childs.set(i, childs.get(i - 1));
+        }
+        childs.set(index, child);
+    }
+
+    /**
+     * Elimina un hijo del nodo
+     * @param index Posición del hijo a eliminar
+     * @return Nodo hijo eliminado
+     */
+    public BNode<E> removeChild(int index) {
+        if (index < 0 || index > count) {
+            throw new IndexOutOfBoundsException("Índice inválido");
+        }
+        
+        BNode<E> removedChild = childs.get(index);
+        
+        // Desplazar los hijos para llenar el espacio
+        for (int i = index; i < count; i++) {
+            childs.set(i, childs.get(i + 1));
+        }
+        childs.set(count, null); // Limpiar la última posición
+        
+        return removedChild;
+    }
+
+    /**
+     * Obtiene la clave en la posición especificada
+     * @param index Posición de la clave
+     * @return Clave solicitada
+     */
+    public E getKey(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Índice inválido");
+        }
+        return keys.get(index);
+    }
+
+    /**
+     * Obtiene el hijo en la posición especificada
+     * @param index Posición del hijo
+     * @return Nodo hijo solicitado
+     */
+    public BNode<E> getChild(int index) {
+        if (index < 0 || index > count) {
+            throw new IndexOutOfBoundsException("Índice inválido");
+        }
+        return childs.get(index);
+    }
+
+    /**
+     * Busca la posición donde debería estar una clave
+     * @param key Clave a buscar
+     * @return Posición donde se encuentra o debería estar
+     */
+    public int findKeyPosition(E key) {
+        int pos = 0;
+        while (pos < count && key.compareTo(keys.get(pos)) > 0) {
+            pos++;
+        }
+        return pos;
+    }
+
+    /**
+     * Verifica si el nodo está lleno
+     * @return true si está lleno, false en caso contrario
+     */
+    public boolean isFull() {
         return count == keys.size();
     }
 
-    public boolean nodeEmpty(){
-        return count == 0;
+    /**
+     * Verifica si el nodo tiene el mínimo de claves requeridas
+     * @return true si tiene suficientes claves, false en caso contrario
+     */
+    public boolean hasMinKeys() {
+        return count >= (keys.size() / 2);
     }
 
-    public boolean searchNode(E key) {
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
         for (int i = 0; i < count; i++) {
-            if (keys.get(i).equals(key)) { // Si la clave se encuentra en el nodo
-                return true;  // La clave fue encontrada
-            }
+            if (i > 0) sb.append(", ");
+            sb.append(keys.get(i));
         }
-        
-        return false;//si no encuentra nada devuelve false
-    }
-
-    public String toString(){
-       StringBuilder sb = new StringBuilder("Node ID: " + idNode + " Keys: ");
-        for (int i = 0; i < count; i++) {
-            sb.append(keys.get(i)).append(" ");
-        }
+        sb.append("]");
         return sb.toString();
-
     }
 }
