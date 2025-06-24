@@ -11,5 +11,23 @@ import java.util.Queue;
 
  public class BTree<E extends Comparable <E>>{
     private BNode<E> root;
-    priva
+    private final int order;    //orden del B-Tree (máximo número de claves por nodo)
+    private int size;           //Numero total de elementos en el arbol
  }
+
+
+ /**
+  * Constructor para crear un arbol vacio
+  * @param order Orden del arbol al menos 2)
+  * @throws IlegalArgumentException en caso es de orden menor
+  */
+  public BTree(int order){
+    if (order < 2){
+        throw new IlegalArgumentException("El orden del B-Tree tiene que ser almenos 2")
+    }
+
+    this.order = order;
+    
+
+    
+  }
