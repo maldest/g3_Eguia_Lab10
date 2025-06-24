@@ -11,14 +11,19 @@ import lab10.Exceptions.NullValueException;
 public class BNode<E extends Comparable<E>> {
     protected ArrayList<E> keys;          // Lista de claves almacenadas en el nodo
     protected ArrayList<BNode<E>> childs; // Lista de referencias a hijos
+    public int idNode;
+    private static int counter = 0;
     protected int count;                  // Número actual de claves en el nodo
-
+    
+    
     /**
      * Constructor que crea un nodo con capacidad para n claves
      * @param n Orden del nodo (máximo número de claves)
      * @throws NegativeValueException Si n es menor o igual a 0
      */
     public BNode(int n) {
+        this.idNode = counter++;
+
         if (n <= 0) {
             throw new Exceptions.NegativeValueException("El orden del nodo debe ser positivo");
         }

@@ -126,6 +126,37 @@ public class BTree<E extends Comparable<E>> {
         }
         return search(root, key);
     }
+    /**
+     * Busca una clave y muestra el nodo y la posición si la encuentra.
+     * @param key La clave a buscar
+     * @return true si la clave está en el árbol, false en otro caso
+     * @throws NullValueException si la clave es null
+     */
+    public boolean search(E key) {
+        if (key == null) {
+            throw new NullValueException("No se puede buscar una clave nula");
+        }
+        return searchVerbose(root, key);
+    }
+
+    private boolean searchVerbose(BNode<E> node, E key) {
+        int i = 0;
+        while (i < node.count && key.compareTo(node.getKey(i)) > 0) {
+            i++;
+        }
+
+        if (i < node.count && key.equals(node.getKey(i))) {
+            System.out.printf("%s se encuentra en el nodo %d en la posición %d%n",
+                            key, node.idNode, i);
+            return true;
+        }
+
+        if (node.isLeaf()) {
+            return false;
+        }
+
+        return searchVerbose(node.getChild(i), key);
+    }
 
     private boolean search(BNode<E> node, E key) {
         int i = 0;
