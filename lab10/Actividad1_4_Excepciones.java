@@ -46,4 +46,10 @@ public class Actividad1_4_Excepciones {
             System.out.println("✓ Excepción capturada: " + e.getMessage());
         }
     }
+    public class ItemNotFound extends RuntimeException {
+        public ItemNotFound(String message) {
+            super(message);
+        }
+    }
+
 }

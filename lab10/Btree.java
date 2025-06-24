@@ -52,7 +52,7 @@ public class BTree<E extends Comparable<E>> {
         size++;
     }
 
-    private void insertNonFull(BNode<E> node, E key) {
+    protected void insertNonFull(BNode<E> node, E key) {
         int i = node.count - 1;
 
         if (node.isLeaf()) {
@@ -84,7 +84,7 @@ public class BTree<E extends Comparable<E>> {
      * @param parent Nodo padre
      * @param childIndex Índice del hijo lleno
      */
-    private void splitChild(BNode<E> parent, int childIndex) {
+    protected void splitChild(BNode<E> parent, int childIndex) {
         BNode<E> child = parent.getChild(childIndex);
         BNode<E> newChild = new BNode<>(order);
         int mid = order / 2;

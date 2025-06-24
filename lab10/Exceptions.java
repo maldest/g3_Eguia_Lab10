@@ -31,14 +31,21 @@ public class Exceptions {
             super(message);
         }
     }
-
-    /**
-     * Excepción para argumentos ilegales en operaciones del B-Tree
-     */
-    public static class IllegalArgumentBTreeException extends IllegalArgumentException {
-        public IllegalArgumentBTreeException(String message) {
+    public static class IllegalArgumentBTreeException extends RuntimeException {
+        public IllegalArgumentBTreeException(String msg) {
+            super(msg);
+        }
+    }
+    public static class ItemNotFound extends RuntimeException {
+        public ItemNotFound(String message) {
             super(message);
         }
     }
-    
+
 }
+
+ 
+
+    
+
+
