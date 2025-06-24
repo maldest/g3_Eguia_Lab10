@@ -23,11 +23,12 @@ import java.util.Queue;
   */
   public BTree(int order){
     if (order < 2){
-        throw new IlegalArgumentException("El orden del B-Tree tiene que ser almenos 2")
+        throw new Exceptions.IllegalArgumentBTreeException("El orden del B-Tree tiene que ser almenos 2")
     }
 
     this.order = order;
-    
+    this.root = new BNode<>(order);
+    this.size = 0;
 
     
   }
