@@ -4,24 +4,28 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import lab10.Exceptions.IllegalArgumentBTreeException;
+import lab10.Exceptions.IllegalOperationException;
+import lab10.Exceptions.NullValueException;
+
 /**
- * Complete B-Tree implementation with enhanced exception handling
- * @param <E> Type of elements stored in the tree, must be Comparable
+ * Implementación completa de un árbol B con manejo de excepciones mejorado.
+ * @param <E> Tipo de elementos almacenados en el árbol. Debe ser Comparable.
  */
 public class BTree<E extends Comparable<E>> {
     private BNode<E> root;
-    private final int order; // Maximum number of keys per node
-    private int size;       // Total number of elements in the tree
+    private final int order; // Número máximo de claves por nodo
+    private int size;        // Cantidad total de elementos en el árbol
 
     /**
-     * Creates an empty B-Tree
-     * @param order Order of the tree (minimum 2)
-     * @throws IllegalArgumentBTreeException If order is less than 2
+     * Crea un árbol B vacío.
+     * @param order Orden del árbol (mínimo 2)
+     * @throws IllegalArgumentBTreeException si el orden es menor que 2
      */
     public BTree(int order) {
         if (order < 2) {
             throw new Exceptions.IllegalArgumentBTreeException(
-                "B-Tree order must be at least 2. Received: " + order);
+                "El orden del B-Tree debe ser al menos 2. Recibido: " + order);
         }
         this.order = order;
         this.root = new BNode<>(order);
@@ -29,13 +33,13 @@ public class BTree<E extends Comparable<E>> {
     }
 
     /**
-     * Inserts a key into the tree
-     * @param key Element to insert
-     * @throws NullValueException If key is null
+     * Inserta una clave en el árbol.
+     * @param key Elemento a insertar
+     * @throws NullValueException si la clave es null
      */
     public void insert(E key) {
         if (key == null) {
-            throw new Exceptions.NullValueException("Cannot insert null key");
+            throw new Exceptions.NullValueException("No se puede insertar una clave nula");
         }
 
         if (root.isFull()) {
@@ -52,19 +56,19 @@ public class BTree<E extends Comparable<E>> {
         int i = node.count - 1;
 
         if (node.isLeaf()) {
-            // Find insertion point and shift keys
+            // Busca el punto de inserción y mueve claves si es necesario
             while (i >= 0 && key.compareTo(node.getKey(i)) < 0) {
                 i--;
             }
             node.insertKey(key, i + 1);
         } else {
-            // Find appropriate child
+            // Encuentra el hijo apropiado
             while (i >= 0 && key.compareTo(node.getKey(i)) < 0) {
                 i--;
             }
             i++;
 
-            // Split full child
+            // Si el hijo está lleno, lo divide
             if (node.getChild(i).isFull()) {
                 splitChild(node, i);
                 if (key.compareTo(node.getKey(i)) > 0) {
@@ -76,49 +80,49 @@ public class BTree<E extends Comparable<E>> {
     }
 
     /**
-     * Splits a full child node
-     * @param parent Parent node
-     * @param childIndex Index of the full child
+     * Divide un nodo hijo que está lleno.
+     * @param parent Nodo padre
+     * @param childIndex Índice del hijo lleno
      */
     private void splitChild(BNode<E> parent, int childIndex) {
         BNode<E> child = parent.getChild(childIndex);
         BNode<E> newChild = new BNode<>(order);
         int mid = order / 2;
 
-        // Move keys to new node
+        // Mueve las claves al nuevo nodo
         for (int j = 0; j < order - mid - 1; j++) {
             newChild.insertKey(child.getKey(mid + 1 + j), j);
         }
 
-        // Move children if not leaf
+        // Mueve los hijos si no es hoja
         if (!child.isLeaf()) {
             for (int j = 0; j < order - mid; j++) {
                 newChild.insertChild(child.getChild(mid + 1 + j), j);
             }
         }
 
-        // Move median key to parent
+        // Mueve la clave mediana al padre
         E midKey = child.getKey(mid);
         parent.insertKey(midKey, childIndex);
-        
-        // Link new child to parent
+
+        // Enlaza el nuevo hijo al padre
         parent.insertChild(newChild, childIndex + 1);
-        
-        // Remove transferred keys from original child
+
+        // Elimina las claves transferidas del hijo original
         for (int j = mid; j < order; j++) {
             child.removeKey(mid);
         }
     }
 
     /**
-     * Checks if key exists in tree
-     * @param key Key to search for
-     * @return true if found, false otherwise
-     * @throws NullValueException If key is null
+     * Verifica si el árbol contiene una clave.
+     * @param key Clave a buscar
+     * @return true si se encuentra, false en caso contrario
+     * @throws NullValueException si la clave es null
      */
     public boolean contains(E key) {
         if (key == null) {
-            throw new Exceptions.NullValueException("Cannot search for null key");
+            throw new Exceptions.NullValueException("No se puede buscar una clave nula");
         }
         return search(root, key);
     }
@@ -136,26 +140,26 @@ public class BTree<E extends Comparable<E>> {
     }
 
     /**
-     * Removes a key from the tree
-     * @param key Key to remove
-     * @return true if removed, false if not found
-     * @throws NullValueException If key is null
-     * @throws IllegalOperationException If tree is empty
+     * Elimina una clave del árbol.
+     * @param key Clave a eliminar
+     * @return true si se eliminó, false si no se encontró
+     * @throws NullValueException si la clave es null
+     * @throws IllegalOperationException si el árbol está vacío
      */
     public boolean remove(E key) {
         if (key == null) {
-            throw new Exceptions.NullValueException("Cannot remove null key");
+            throw new Exceptions.NullValueException("No se puede eliminar una clave nula");
         }
         if (isEmpty()) {
-            throw new Exceptions.IllegalOperationException("Cannot remove from empty tree");
+            throw new Exceptions.IllegalOperationException("No se puede eliminar de un árbol vacío");
         }
 
         boolean found = contains(key);
         if (found) {
             delete(root, key);
             size--;
-            
-            // Update root if it becomes empty
+
+            // Si la raíz se queda vacía, actualízala
             if (root.count == 0 && !root.isLeaf()) {
                 root = root.getChild(0);
             }
@@ -166,7 +170,7 @@ public class BTree<E extends Comparable<E>> {
     private void delete(BNode<E> node, E key) {
         int idx = node.findKeyPosition(key);
 
-        // Key found in this node
+        // Clave encontrada en este nodo
         if (idx < node.count && node.getKey(idx).equals(key)) {
             if (node.isLeaf()) {
                 node.removeKey(idx);
@@ -174,19 +178,19 @@ public class BTree<E extends Comparable<E>> {
                 deleteInternalNode(node, idx);
             }
         } 
-        // Key not found, continue searching
+        // Clave no encontrada, continuar búsqueda
         else {
             if (node.isLeaf()) return;
 
             boolean isLastChild = (idx == node.count);
             BNode<E> child = node.getChild(idx);
 
-            // Ensure child has enough keys
+            // Asegura que el hijo tenga suficientes claves
             if (child.count <= order / 2) {
                 fillChild(node, idx);
             }
 
-            // Adjust index if last child was merged
+            // Ajusta el índice si el hijo fue fusionado
             if (isLastChild && idx > node.count) {
                 delete(node.getChild(idx - 1), key);
             } else {
@@ -195,32 +199,155 @@ public class BTree<E extends Comparable<E>> {
         }
     }
 
-    private void deleteInternalNode(BNode<E> node, int idx) {
-        // Implementation for deleting from internal nodes
-        // (Uses predecessor/successor and merging as needed)
+/**
+ * Elimina una clave de un nodo interno, manejando redistribución o fusión según sea necesario.
+ * @param node El nodo interno del cual se eliminará la clave.
+ * @param idx El índice de la clave que se va a eliminar.
+ */
+private void deleteInternalNode(BNode<E> node, int idx) {
+    BNode<E> leftChild = node.getChild(idx);
+    BNode<E> rightChild = node.getChild(idx + 1);
+
+    // Caso 1: Pedir prestado del hijo izquierdo si tiene suficientes claves
+    if (leftChild.count > order / 2) {
+        E predecessor = getMaxKey(leftChild);        // Obtener el predecesor
+        node.keys.set(idx, predecessor);             // Reemplazar la clave con el predecesor
+        delete(leftChild, predecessor);              // Eliminar el predecesor en el hijo izquierdo
+    }
+    // Caso 2: Pedir prestado del hijo derecho si tiene suficientes claves
+    else if (rightChild.count > order / 2) {
+        E successor = getMinKey(rightChild);         // Obtener el sucesor
+        node.keys.set(idx, successor);               // Reemplazar la clave con el sucesor
+        delete(rightChild, successor);               // Eliminar el sucesor en el hijo derecho
+    }
+    // Caso 3: Fusionar ambos hijos si están en capacidad mínima
+    else {
+        mergeChildren(node, idx);                    // Fusionar hijo izquierdo + clave + hijo derecho
+        delete(leftChild, node.getKey(idx));         // Eliminar la clave fusionada desde el nuevo nodo combinado
+    }
+}
+
+/**
+ * Obtiene la clave máxima de un subárbol (usado para encontrar el predecesor).
+ * @param node La raíz del subárbol.
+ * @return La clave máxima encontrada.
+ */
+private E getMaxKey(BNode<E> node) {
+    while (!node.isLeaf()) {
+        node = node.getChild(node.count);            // Avanzar al hijo más a la derecha
+    }
+    return node.getKey(node.count - 1);              // Última clave del nodo hoja
+}
+
+/**
+ * Obtiene la clave mínima de un subárbol (usado para encontrar el sucesor).
+ * @param node La raíz del subárbol.
+ * @return La clave mínima encontrada.
+ */
+private E getMinKey(BNode<E> node) {
+    while (!node.isLeaf()) {
+        node = node.getChild(0);                     // Avanzar al hijo más a la izquierda
+    }
+    return node.getKey(0);                           // Primera clave del nodo hoja
+}
+
+/**
+ * Fusiona una clave del nodo padre y su hijo derecho dentro del hijo izquierdo.
+ * @param parent El nodo padre.
+ * @param idx El índice de la clave que se va a fusionar.
+ */
+private void mergeChildren(BNode<E> parent, int idx) {
+    BNode<E> leftChild = parent.getChild(idx);
+    BNode<E> rightChild = parent.getChild(idx + 1);
+
+    // Mover la clave del padre al final del hijo izquierdo
+    leftChild.insertKey(parent.getKey(idx), leftChild.count);
+
+    // Mover todas las claves del hijo derecho al hijo izquierdo
+    for (int i = 0; i < rightChild.count; i++) {
+        leftChild.insertKey(rightChild.getKey(i), leftChild.count);
     }
 
-    private void fillChild(BNode<E> parent, int childIdx) {
-        // Implementation for redistributing keys between nodes
+    // Si no es hoja, mover también los hijos del hijo derecho
+    if (!rightChild.isLeaf()) {
+        for (int i = 0; i <= rightChild.count; i++) {
+            leftChild.insertChild(rightChild.getChild(i), leftChild.childs.size());
+        }
     }
+
+    // Eliminar la clave fusionada y el hijo derecho del padre
+    parent.removeKey(idx);
+    parent.removeChild(idx + 1);
+}
+
+
+/**
+ * Asegura que un nodo hijo tenga suficientes claves, ya sea tomando prestado de sus hermanos
+ * o fusionándose con alguno de ellos.
+ * @param parent El nodo padre.
+ * @param childIdx El índice del hijo que necesita ser llenado.
+ */
+private void fillChild(BNode<E> parent, int childIdx) {
+    BNode<E> child = parent.getChild(childIdx);
+
+    // Caso 1: Pedir prestado del hermano izquierdo si es posible
+    if (childIdx > 0 && parent.getChild(childIdx - 1).count > order / 2) {
+        BNode<E> leftSibling = parent.getChild(childIdx - 1);
+        
+        // Mover una clave del padre al hijo
+        child.insertKey(parent.getKey(childIdx - 1), 0);
+        // Reemplazar la clave en el padre con la última clave del hermano izquierdo
+        parent.keys.set(childIdx - 1, leftSibling.getKey(leftSibling.count - 1));
+        leftSibling.removeKey(leftSibling.count - 1);
+
+        // Mover el puntero de hijo si no es hoja
+        if (!leftSibling.isLeaf()) {
+            child.insertChild(leftSibling.removeChild(leftSibling.count), 0);
+        }
+    }
+    // Caso 2: Pedir prestado del hermano derecho si es posible
+    else if (childIdx < parent.count && parent.getChild(childIdx + 1).count > order / 2) {
+        BNode<E> rightSibling = parent.getChild(childIdx + 1);
+        
+        // Mover una clave del padre al hijo
+        child.insertKey(parent.getKey(childIdx), child.count);
+        // Reemplazar la clave del padre con la primera clave del hermano derecho
+        parent.keys.set(childIdx, rightSibling.getKey(0));
+        rightSibling.removeKey(0);
+
+        // Mover el puntero de hijo si no es hoja
+        if (!rightSibling.isLeaf()) {
+            child.insertChild(rightSibling.removeChild(0), child.childs.size());
+        }
+    }
+    // Caso 3: Fusionarse con un hermano si no es posible pedir prestado
+    else {
+        if (childIdx > 0) {
+            mergeChildren(parent, childIdx - 1);  // Fusiona con el hermano izquierdo
+        } else {
+            mergeChildren(parent, childIdx);      // Fusiona con el hermano derecho
+        }
+    }
+}
+
 
     /**
-     * @return Number of elements in the tree
+     * @return Número de elementos en el árbol
      */
     public int size() {
         return size;
     }
 
     /**
-     * @return true if tree is empty, false otherwise
+     * @return true si el árbol está vacío, false en caso contrario
      */
     public boolean isEmpty() {
         return size == 0;
     }
 
     /**
-     * Returns all elements in sorted order
-     * @return List of elements in-order
+     * Retorna todos los elementos en orden.
+     * @return Lista de elementos en recorrido in-order
      */
     public ArrayList<E> inOrderTraversal() {
         ArrayList<E> result = new ArrayList<>();
@@ -244,11 +371,11 @@ public class BTree<E extends Comparable<E>> {
     }
 
     /**
-     * Prints the tree level by level
+     * Imprime el árbol nivel por nivel.
      */
     public void printTree() {
         if (isEmpty()) {
-            System.out.println("B-Tree is empty");
+            System.out.println("El B-Tree está vacío");
             return;
         }
 
