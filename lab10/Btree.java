@@ -222,8 +222,10 @@ private void deleteInternalNode(BNode<E> node, int idx) {
     }
     // Caso 3: Fusionar ambos hijos si están en capacidad mínima
     else {
-        mergeChildren(node, idx);                    // Fusionar hijo izquierdo + clave + hijo derecho
-        delete(leftChild, node.getKey(idx));         // Eliminar la clave fusionada desde el nuevo nodo combinado
+        E keyToDelete = node.getKey(idx);  // ← capturamos antes de que se borre
+        mergeChildren(node, idx);
+        delete(leftChild, keyToDelete);    // ← usamos la clave segura
+
     }
 }
 

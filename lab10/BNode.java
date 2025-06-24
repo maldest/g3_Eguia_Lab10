@@ -1,6 +1,9 @@
 package lab10;
 import java.util.ArrayList;
 
+import lab10.Exceptions.NegativeValueException;
+import lab10.Exceptions.NullValueException;
+
 /**
  * Clase que representa un nodo de un B-Tree
  * @param <E> Tipo de elementos almacenados en el nodo, debe ser Comparable
@@ -88,18 +91,21 @@ public class BNode<E extends Comparable<E>> {
      * @param index Posición donde insertar
      */
     public void insertChild(BNode<E> child, int index) {
-        // Desplazar los hijos para hacer espacio
-        for (int i = count + 1; i > index; i--) {
-            childs.set(i, childs.get(i - 1));
+        childs.add(index, child); // ArrayList lo desplaza automáticamente
+        // Elimina el último si excedes el tamaño permitido
+        if (childs.size() > keys.size() + 1) {
+            childs.remove(childs.size() - 1);
         }
-        childs.set(index, child);
     }
+
 
     /**
      * Elimina un hijo del nodo
      * @param index Posición del hijo a eliminar
      * @return Nodo hijo eliminado
      */
+
+     /**
     public BNode<E> removeChild(int index) {
         if (index < 0 || index > count) {
             throw new IndexOutOfBoundsException("Índice inválido");
@@ -115,6 +121,25 @@ public class BNode<E extends Comparable<E>> {
         
         return removedChild;
     }
+    */
+    public BNode<E> removeChild(int index) {
+    if (index < 0 || index >= childs.size()) {
+        throw new IndexOutOfBoundsException("Índice inválido: " + index);
+    }
+
+    BNode<E> removedChild = childs.get(index);
+
+    // Desplazar hijos hacia la izquierda para llenar el espacio
+    for (int i = index; i < childs.size() - 1; i++) {
+        childs.set(i, childs.get(i + 1));
+    }
+
+    // Eliminar el último (duplicado)
+    childs.set(childs.size() - 1, null);
+
+    return removedChild;
+}
+
 
     /**
      * Obtiene la clave en la posición especificada
